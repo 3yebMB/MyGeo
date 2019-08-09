@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Geo</string>
+    <string name="author">Register App</string>
+    <string name="text_bottom">Sign in</string>
+    <string name="btnSignin">Sing In</string>
+    <string name="btnSignUp">Sign Up</string>
 </resources>

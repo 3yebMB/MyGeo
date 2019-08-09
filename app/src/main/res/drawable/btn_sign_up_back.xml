@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:color="@color/ripple_effect"
+    tools:targetApi="lollipop">
+
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/btn_sign_up_color" />
+                <stroke android:color="@color/btn_sing_up_stroke" android:width="2dp"></stroke>
+                <corners android:radius="4dp"></corners>
+
+        </shape>
+    </item>
+</ripple>
