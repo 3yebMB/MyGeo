@@ -1,9 +1,11 @@
 package dev.m13d.mygeo;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
@@ -49,6 +52,64 @@ public class MainActivity extends AppCompatActivity {
                 showSignUpWindow();
             }
         });
+        btnSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showSignInWindow();
+            }
+        });
+
+    }
+
+    private void showSignInWindow() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Sign In");
+        dialog.setMessage("Fill in fields for sign in");
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View signIn_window = inflater.inflate(R.layout.sign_in_window, null);
+        dialog.setView(signIn_window);
+
+        final MaterialEditText email = signIn_window.findViewById(R.id.emailField);
+        final MaterialEditText pass = signIn_window.findViewById(R.id.passField);
+
+        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                dialogInterface.dismiss();
+            }
+        });
+
+        dialog.setPositiveButton("Log in", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                if (TextUtils.isEmpty(email.getText().toString())) {
+                    Snackbar.make(root, "Input your e-mail", Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (pass.getTag().toString().length() < 5) {
+                    Snackbar.make(root, "Input password bigger than 5 signs", Snackbar.LENGTH_SHORT).show();
+                    return;
+                }
+
+                auth.signInWithEmailAndPassword(email.getText().toString(), pass.getText().toString())
+                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                startActivity(new Intent(MainActivity.this, MapActivity.class));
+                                finish();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Snackbar.make(root, "Authorization error. " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                            }
+                        });
+
+            }
+        });
+        dialog.show();
     }
 
     private void showSignUpWindow() {
@@ -87,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     Snackbar.make(root, "Input your phone", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
-                if (pass.getTag().toString().length() < 5) {
+                if (pass.getText().toString().length() < 5) {
                     Snackbar.make(root, "Input password bigger than 5 signs", Snackbar.LENGTH_SHORT).show();
                     return;
                 }
@@ -102,16 +163,21 @@ public class MainActivity extends AppCompatActivity {
                             user.setPass(pass.getText().toString());
                             user.setPhone(phone.getText().toString());
 
-                            users.child(user.getEmail()).setValue(user)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Snackbar.make(root, "User was added", Snackbar.LENGTH_SHORT).show();
-                                }
-                            });
+                            users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                    .setValue(user)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            Snackbar.make(root, "User was added", Snackbar.LENGTH_SHORT).show();
+                                        }
+                                    }).addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            Snackbar.make(root, "Log in error. " + e.getMessage(), Snackbar.LENGTH_LONG).show();
+                                        }
+                                    });
                         }
                     });
-
             }
         });
         dialog.show();
